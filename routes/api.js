@@ -21,14 +21,19 @@ router.get('/',async(req,res)=>{
         const apiData = await apimodel.find();
         res.json(apiData);
     }catch(err){
-        res.status(404).json({messgae:err.message})
+        res.status(404).send("Data not found")
     }
 })
 
 //getting one
-router.get('/:id',getToDo,(req,res)=>{
-    res.json(res.apiData);
-})
+// title:res.apiData.title
+router.get('/:id',(req,res)=>{
+    try{
+        res.json(res.apiData);
+    }catch(err){
+        res.status(404).json({messgae:err.message})
+    }
+},getToDo)
 
 
 //creating
@@ -71,5 +76,48 @@ router.delete('/:id',getToDo,async(req,res)=>{
         res.status(404).json({message:err.message})
     }
 })
+
+/* 
+searchin title of todo with full strings or just the substring
+using the regular expression
+.*t.* means any title that contains it's substring.
+"i" is for making it not case sensitive.
+
+to check arr.lenth is empty or not
+arr.length === 0
+!arr.length
+*/
+
+router.get('/search/:title',async function(req,res){
+    try{
+        var regex = new RegExp(req.params.title,'i');
+        let data = await apimodel.find({title:regex});        
+        if(data.length===0){
+            res.status(404).send("Data not found")
+            
+        }else{
+            res.status(400).json(data);
+        } 
+    }catch(err){
+        // console.error(err)
+        return res.status(500).send("Enter the data")
+    }        
+})
+
+// router.get('/search/:title',(req,res)=>{
+//     async function getTitle(){
+//         const title = await apimodel
+//             .find({title:/.*t.*/i});
+//         console.log(title);
+//     }
+//     getTitle(); 
+// }) 
+
+// async function getTitle(){
+//     const title = await apimodel
+//         .find({title:/.*.*/i});
+//     console.log(title);
+// }
+// getTitle(); 
 
 module.exports = router

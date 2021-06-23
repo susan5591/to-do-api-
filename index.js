@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const apimodel = require('./models/apimodel');
 
 mongoose.connect('mongodb://localhost/todo',{ useNewUrlParser: true , useUnifiedTopology: true });
 const db= mongoose.connection;
@@ -13,4 +14,6 @@ db.once('open',()=>console.log("Connected to Database"))
     const apiRouter = require('./routes/api');
     app.use('/todo',apiRouter)
 
-    app.listen(3000,()=> console.log("Server has started"));
+
+
+app.listen(3000,()=> console.log("Server has started"));
