@@ -12,7 +12,7 @@ db.once('open',()=>console.log("Connected to Database"))
     app.use(express.json());
 
     const apiRouter = require('./routes/api');
-    app.use('/todo',apiRouter)
+    app.use('/todo/',apiRouter)
 
 
 

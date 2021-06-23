@@ -1,71 +1,11 @@
+const Joi = require('joi')
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express('router');
 
 const apimodel = require('../models/apimodel');
 
-
-
-//getting all
-router.get('/',async(req,res)=>{
-    try{
-        const apiData = await apimodel.find();
-        res.json(apiData);
-    }catch(err){
-        res.status(404).send("Data not found")
-    }
-})
-
-//getting one
-// title:res.apiData.title
-router.get('/:id',getToDo,(req,res)=>{
-    try{
-        res.json(res.apiData);
-    }catch(err){
-        res.status(404).send("Data not found id")
-    }
-})
-
-
-//creating
-router.post('/',async(req,res)=>{
-    const apiData = new apimodel({
-        title:req.body.title,
-        description:req.body.description
-    })
-    try{
-        const newData = await apiData.save();
-        res.status(201).json(newData);
-    }catch(err){
-        res.status(201).json({message:err.message})
-    }
-})
-
-//updating
-router.patch('/:id',getToDo,async(req,res)=>{
-    if(req.body.title !=null){
-        res.apiData.title = req.body.title;
-    }
-    if(req.body.description !=null) {
-        res.apiData.description = req.body.description;
-    }
-    try{
-        const updateApiData = await res.apiData.save();
-        res.json(updateApiData)
-    }catch(err){
-        res.status(400).json({message:err.message})
-    }
-})
-
-
-//deleting
-router.delete('/:id',getToDo,async(req,res)=>{
-    try{
-        await res.apiData.remove();
-        res.json({message:'message deleted'})
-    }catch(err){
-        res.status(404).json({message:err.message})
-    }
-})
+mongoose.set('useFindAndModify', false);
 
 /* 
 searchin title of todo with full strings or just the substring
@@ -82,45 +22,98 @@ router.get('/search/:title', async function(req,res){
     try{
         /* if(req.query.title.length==0){
             return res.status(400).json("Search Empty")
-        }    */ 
+        }   */
         var regex = new RegExp(req.params.title,'i');
         let data = await apimodel.find({title:regex});        
         if(data.length===0){
             res.status(404).send("Searched Data not found")
             
         }else{
-            res.status(400).json(data);
+            res.json(data);
         } 
     }catch(err){
-        return res.status(500).send("Enter the data")
+        return res.status(400).send("Enter the data")
     }        
 })
 
-/* 
-apiData gets the data of the id sent through the url
-in catch if you send nothing, it will send "data not found error"
- */
-
-async function getToDo(req,res,next){
-    let apiData
+//getting all
+router.get('/',async(req,res)=>{
     try{
-        apiData = await apimodel.findById(req.params.id);
-        if(!apiData) return res.status(404).json({message:"Cannot find the serached ToDo"})
+        const apiData = await apimodel.find();
+        res.json(apiData);
     }catch(err){
-        return res.status(500).send("Data not found ")
+        res.status(404).send("Data not found")
     }
-    res.apiData = apiData
-    next()
+})
+
+//getting one
+// title:res.apiData.title
+router.get('/:id',async(req,res)=>{
+    try{
+        const apiData = await apimodel.findById(req.params.id)
+        
+        res.json(apiData);
+    }catch(err){
+        res.status(404).send("Data not found id")
+    }
+})
+
+
+//creating
+router.post('/',async(req,res)=>{
+    const{error} = validateToDo(req.body);
+    if(error) return res.status(400).send(error.details[0].message);
+    const apiData = new apimodel({
+        title:req.body.title,
+        description:req.body.description
+    })
+    try{
+        const newData = await apiData.save();
+        res.status(201).json(newData);
+    }catch(err){
+        res.status(201).json({message:err.message})
+    }
+})
+
+//updating
+router.patch('/:id',async(req,res)=>{
+    const{error} = validateToDo(req.body);
+    if(error) return res.status(400).send(error.details[0].message);
+    try{
+        const apiData = await apimodel.findByIdAndUpdate(req.params.id,{
+            title:req.body.title,
+            description:req.body.description
+            },{new:true});
+        if(!apiData) return res.status(404).send("The data with the given id is not found")
+        res.send(apiData);
+    }catch(err){
+        res.status(404).send("Data not found to update")
+    }
+}) 
+    
+
+//deleting
+router.delete('/:id',async(req,res)=>{
+    try{
+        const apiData = await apimodel.findByIdAndRemove(req.params.id);
+        res.json({message:'message deleted'})
+    }catch(err){
+        res.status(404).json({message:err.message})
+    }
+})
+
+
+/* 
+object destructure
+for validating the schema when given data i.e while updating and posting
+joi is npm module to validate schema
+ */
+function validateToDo(todo){
+    const schema = Joi.object({
+        title:Joi.string().min(3).required(),
+        description:Joi.string().min(5).required(),
+    })
+    return schema.validate(todo);
 }
-
-
-// async function getTitle(){
-//     const title = await apimodel
-//         .find({title:/.*.*/i});
-//     console.log(title);
-// }
-// getTitle(); 
-
-
 
 module.exports = router
