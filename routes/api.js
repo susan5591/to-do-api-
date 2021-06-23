@@ -4,17 +4,7 @@ const router = express('router');
 const apimodel = require('../models/apimodel');
 
 
-async function getToDo(req,res,next){
-    let apiData
-    try{
-        apiData = await apimodel.findById(req.params.id);
-        if(!apiData) return res.status(404).json({message:"Cannot find the serached ToDo"})
-    }catch(err){
-        return res.status(500).json({message:err.message})
-    }
-    res.apiData = apiData
-    next()
-}
+
 //getting all
 router.get('/',async(req,res)=>{
     try{
@@ -27,13 +17,13 @@ router.get('/',async(req,res)=>{
 
 //getting one
 // title:res.apiData.title
-router.get('/:id',(req,res)=>{
+router.get('/:id',getToDo,(req,res)=>{
     try{
         res.json(res.apiData);
     }catch(err){
-        res.status(404).json({messgae:err.message})
+        res.status(404).send("Data not found id")
     }
-},getToDo)
+})
 
 
 //creating
@@ -87,31 +77,42 @@ to check arr.lenth is empty or not
 arr.length === 0
 !arr.length
 */
-
-router.get('/search/:title',async function(req,res){
+router.get('/search/:title', async function(req,res){
+    console.log("Running")
     try{
+        /* if(req.query.title.length==0){
+            return res.status(400).json("Search Empty")
+        }    */ 
         var regex = new RegExp(req.params.title,'i');
         let data = await apimodel.find({title:regex});        
         if(data.length===0){
-            res.status(404).send("Data not found")
+            res.status(404).send("Searched Data not found")
             
         }else{
             res.status(400).json(data);
         } 
     }catch(err){
-        // console.error(err)
         return res.status(500).send("Enter the data")
     }        
 })
 
-// router.get('/search/:title',(req,res)=>{
-//     async function getTitle(){
-//         const title = await apimodel
-//             .find({title:/.*t.*/i});
-//         console.log(title);
-//     }
-//     getTitle(); 
-// }) 
+/* 
+apiData gets the data of the id sent through the url
+in catch if you send nothing, it will send "data not found error"
+ */
+
+async function getToDo(req,res,next){
+    let apiData
+    try{
+        apiData = await apimodel.findById(req.params.id);
+        if(!apiData) return res.status(404).json({message:"Cannot find the serached ToDo"})
+    }catch(err){
+        return res.status(500).send("Data not found ")
+    }
+    res.apiData = apiData
+    next()
+}
+
 
 // async function getTitle(){
 //     const title = await apimodel
@@ -119,5 +120,7 @@ router.get('/search/:title',async function(req,res){
 //     console.log(title);
 // }
 // getTitle(); 
+
+
 
 module.exports = router
