@@ -14,26 +14,29 @@ using the regular expression
 "i" is for making it not case sensitive.
 
 to check arr.lenth is empty or not
-arr.length === 0
-!arr.length
+data.length === 0
+!data.length 
+
+here the input is given as :
+http://localhost:3000/todo/search?title=query
+if the query is empty the if condition is executed
+if the query contains any substring that is present in title then the description of title with that substring is shown in json format
+if the query string doesn't contain any strings present in titles, then the else condition is executed.
 */
-router.get('/search/:title', async function(req,res){
-    console.log("Running")
-    try{
-        /* if(req.query.title.length==0){
-            return res.status(400).json("Search Empty")
-        }   */
-        var regex = new RegExp(req.params.title,'i');
+router.get('/search', async function(req,res){    
+    console.log(req.query.title)    
+    if(req.query.title.length==0){
+        return res.status(400).json("Search Empty")
+    }   
+    else{
+        var regex = new RegExp(req.query.title,'i');
         let data = await apimodel.find({title:regex});        
         if(data.length===0){
-            res.status(404).send("Searched Data not found")
-            
+            return res.status(404).send("Searched Data not found")                
         }else{
-            res.json(data);
+            return res.send(data);
         } 
-    }catch(err){
-        return res.status(400).send("Enter the data")
-    }        
+    }                      
 })
 
 //getting all
@@ -108,6 +111,7 @@ object destructure
 for validating the schema when given data i.e while updating and posting
 joi is npm module to validate schema
  */
+
 function validateToDo(todo){
     const schema = Joi.object({
         title:Joi.string().min(3).required(),
