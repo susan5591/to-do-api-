@@ -18,6 +18,9 @@ route.post('/', async(req,res)=>{
     let user = await Login.findOne({email:req.body.email}); 
     if(!user) return res.status(400).send("Invalid email or password");    
 
+    console.log(user.password)
+    console.log(req.body.password)
+    console.log(await bcrypt.hash(req.body.password,10))
     /* 
         bcrypt is going to get the salt from user.password and 
         pass it in input password and compare those hash passwords and return true or false.
@@ -30,6 +33,7 @@ route.post('/', async(req,res)=>{
             return res.status(200).json({message:"Login successful"});
         }
         res.status(400).send("Invalid email or password two");  
+        
     })
 })
  

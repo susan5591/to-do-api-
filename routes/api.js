@@ -1,6 +1,7 @@
 const Joi = require('joi')
 const express = require('express');
 const mongoose = require("mongoose");
+const _ = require('lodash');
 
 const router = express.Router();
 const apimodel = require('../models/apimodel');
@@ -44,9 +45,26 @@ router.get('/search', async function(req,res){
 router.get('/',async(req,res)=>{
     try{
         const apiData = await apimodel.find();
-        res.json(apiData);
+        let display = await apimodel.find({is_Deleted:false}) 
+        /* if(register) return res.status(400).send('User already registered.');
+        if(apiData.is_Deleted===false){
+            res.json(apiData);
+        } */
+        if(display.length===0){
+            return res.status(404).send(" No data found in Database")                
+        }else{
+            /* return res.json({
+                id:res.display.id,
+                title:res.display.title,
+                description:res.display.description,
+                writtenDate:res.display.writtenDate
+            
+            }); */
+            // res.send(_.pick(display,['id','title','description','writtenDate']));
+            res.send(display);
+        }
     }catch(err){
-        res.status(404).send("Data not found")
+        res.status(404).send("No data found in Database")
     }
 })
 
@@ -100,8 +118,11 @@ router.patch('/:id',async(req,res)=>{
 //deleting
 router.delete('/:id',async(req,res)=>{
     try{
-        const apiData = await apimodel.findByIdAndRemove(req.params.id);
-        res.json({message:'message deleted'})
+        const apiData = await apimodel.findByIdAndUpdate(req.params.id,{
+            is_Deleted:true
+        },{new:true});
+        if(!apiData) return res.status(404).send("The data with the given id is not found")
+        res.send("Deleted Successfully");
     }catch(err){
         res.status(404).json({message:err.message})
     }

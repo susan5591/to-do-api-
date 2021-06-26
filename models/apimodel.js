@@ -13,6 +13,11 @@ const apiSchema = new mongoose.Schema({
         type:Date,
         required:true,
         default:Date.now
+    },
+    is_Deleted:{
+        type:Boolean,
+        default:false,
+        select:false
     }
 });
 
