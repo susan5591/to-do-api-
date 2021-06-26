@@ -43,43 +43,23 @@ router.post('/',async(req,res)=>{
             })
             .catch(err=>{
                 console.log("else") 
-                // res.status(500).json({error:err});
-                res.send("Error in database or the collection")
+                res.status(500).json({error:err});
+                // res.send("Error in database or the collection")
             });
         }
     })
 
 })
 
-/* router.post('/',async(req,res)=>{
-    const {error} = registerValidate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-
-    let register = await Register.findOne({email:req.body.email});
-    if(register) return res.status(500).send("Email already registered.")
-
-    register = new Register({
-        name:req.body.name,
-        email:req.body.email,
-        password:req.body.password
-    })
-    try{
-        const result = await register.save();
-        res.status(201).json(result);
-    }catch(err){
-        res.status(201).json({message:err.message})
-    }
-})
-     */
-
-
+/* 
+to Validate the input from the users.
+Joi is an npm module that helps to validate the string.
+*/
 function registerValidate(regis){
     const schema = Joi.object({
         name:Joi.string().min(3).max(50).required(),
         email:Joi.string().min(5).max(255).required().email(),
-        password:Joi.string(
-
-        ).min(8).required()
+        password:Joi.string().min(8).required()
     })
     return schema.validate(regis)
 }
