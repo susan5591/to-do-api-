@@ -14,6 +14,7 @@ const apiSchema = new mongoose.Schema({
         required:true,
         default:Date.now
     },
+    //select helps to hide this column from the users while displayin the output
     is_Deleted:{
         type:Boolean,
         default:false,

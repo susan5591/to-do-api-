@@ -1,12 +1,9 @@
 const Joi = require('joi')
 const express = require('express');
 const mongoose = require("mongoose");
-const _ = require('lodash');
 
 const router = express.Router();
 const apimodel = require('../models/apimodel');
-const { string } = require('joi');
-
 mongoose.set('useFindAndModify', false);
 
 /* 
@@ -53,14 +50,6 @@ router.get('/',async(req,res)=>{
         if(display.length===0){
             return res.status(404).send(" No data found in Database")                
         }else{
-            /* return res.json({
-                id:res.display.id,
-                title:res.display.title,
-                description:res.display.description,
-                writtenDate:res.display.writtenDate
-            
-            }); */
-            // res.send(_.pick(display,['id','title','description','writtenDate']));
             res.send(display);
         }
     }catch(err){
