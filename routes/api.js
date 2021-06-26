@@ -1,9 +1,10 @@
 const Joi = require('joi')
 const express = require('express');
-const mongoose = require('mongoose');
-const router = express('router');
+const mongoose = require("mongoose");
 
+const router = express.Router();
 const apimodel = require('../models/apimodel');
+const { string } = require('joi');
 
 mongoose.set('useFindAndModify', false);
 
@@ -80,9 +81,9 @@ router.post('/',async(req,res)=>{
 
 //updating
 router.patch('/:id',async(req,res)=>{
-    const{error} = validateToDo(req.body);
-    if(error) return res.status(400).send(error.details[0].message);
     try{
+        const{error} = validateToDo(req.body);
+        if(error) return res.status(400).send(error.details[0].message);
         const apiData = await apimodel.findByIdAndUpdate(req.params.id,{
             title:req.body.title,
             description:req.body.description
@@ -92,6 +93,7 @@ router.patch('/:id',async(req,res)=>{
     }catch(err){
         res.status(404).send("Data not found to update")
     }
+    
 }) 
     
 
@@ -111,13 +113,13 @@ object destructure
 for validating the schema when given data i.e while updating and posting
 joi is npm module to validate schema
  */
-
 function validateToDo(todo){
     const schema = Joi.object({
-        title:Joi.string().min(3).required(),
-        description:Joi.string().min(5).required(),
+        title:Joi.string().min(3).max(30).required(),
+        description:Joi.string().min(5).max(100).required()
     })
-    return schema.validate(todo);
+    return schema.validate(todo)
 }
+
 
 module.exports = router
